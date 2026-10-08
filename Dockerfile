@@ -2,9 +2,9 @@
 FROM python:3.9-slim-bullseye
 
 WORKDIR /app
-COPY app/requirements.txt .
+COPY --chmod=0644 app/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY app/app.py .
+COPY --chmod=0644 app/app.py .
 
 RUN useradd -u 10001 -m appuser
 USER 10001
