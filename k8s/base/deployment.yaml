@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-biz-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: demo-biz-b}
+  template:
+    metadata:
+      labels: {app: demo-biz-b}
+    spec:
+      containers:
+        - name: app
+          image: demo-biz-b:latest
+          imagePullPolicy: IfNotPresent   # image is built locally into Colima's docker
+          ports: [{containerPort: 8080}]
+          env:
+            - {name: BUSINESS, value: b}
+            - name: ENVIRONMENT
+              valueFrom: {configMapKeyRef: {name: env-config, key: ENVIRONMENT}}
+          readinessProbe: {httpGet: {path: /healthz, port: 8080}}
+          resources:
+            requests: {cpu: 20m, memory: 64Mi}
+            limits: {memory: 128Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-biz-b
+spec:
+  selector: {app: demo-biz-b}
+  ports: [{port: 80, targetPort: 8080}]

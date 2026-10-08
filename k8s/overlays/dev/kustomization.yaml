@@ -1,0 +1,11 @@
+namespace: b-dev
+resources:
+  - ../../base
+  - namespace.yaml
+labels:
+  - pairs: {business: b, environment: dev}
+    includeSelectors: false
+configMapGenerator:
+  - name: env-config
+    literals: [ENVIRONMENT=dev]
+generatorOptions: {disableNameSuffixHash: true}

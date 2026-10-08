@@ -1,0 +1,11 @@
+namespace: b-stg
+resources:
+  - ../../base
+  - namespace.yaml
+labels:
+  - pairs: {business: b, environment: stg}
+    includeSelectors: false
+configMapGenerator:
+  - name: env-config
+    literals: [ENVIRONMENT=stg]
+generatorOptions: {disableNameSuffixHash: true}

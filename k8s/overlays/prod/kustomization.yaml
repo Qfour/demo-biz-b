@@ -1,0 +1,11 @@
+namespace: b-prod
+resources:
+  - ../../base
+  - namespace.yaml
+labels:
+  - pairs: {business: b, environment: prod}
+    includeSelectors: false
+configMapGenerator:
+  - name: env-config
+    literals: [ENVIRONMENT=prod]
+generatorOptions: {disableNameSuffixHash: true}
