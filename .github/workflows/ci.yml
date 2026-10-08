@@ -23,10 +23,14 @@ jobs:
         env:
           SECURE_API_TOKEN: ${{ secrets.SECURE_API_TOKEN }}
         run: |
-          # Policy failures are reported but do not block this demo; drop `|| true` to enforce.
+          # exit 1 = policy evaluation failed (reported, not blocking in this demo).
+          # Any other non-zero code (bad token, network, usage) fails the job.
+          set +e
           ./sysdig-cli-scanner --apiurl "$SECURE_API_URL" \
             --output=json-file=scan.json \
-            "docker://$IMAGE" || true
+            "docker://$IMAGE"
+          rc=$?
+          [ "$rc" -le 1 ] || exit "$rc"
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: sysdig-scan, path: scan.json, if-no-files-found: ignore}
