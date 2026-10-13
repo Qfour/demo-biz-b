@@ -1,5 +1,6 @@
 # Old base image + old dependencies are intentional: this is a demo for vulnerability scanning.
 FROM python:3.9-slim-bullseye
+LABEL org.opencontainers.image.source="https://github.com/Qfour/demo-biz-b"
 
 WORKDIR /app
 COPY --chmod=0644 app/requirements.txt .

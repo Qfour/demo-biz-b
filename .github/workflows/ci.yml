@@ -4,16 +4,20 @@ on:
   pull_request:
 
 env:
-  IMAGE: demo-biz-b:${{ github.sha }}
+  IMAGE: ghcr.io/qfour/demo-biz-b:${{ github.sha }}
+  IMAGE_LATEST: ghcr.io/qfour/demo-biz-b:latest
   SECURE_API_URL: https://app.au1.sysdig.com   # AU1 region
 
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - name: Build image
-        run: docker build -t "$IMAGE" .
+        run: docker build -t "$IMAGE" -t "$IMAGE_LATEST" .
       - name: Install sysdig-cli-scanner
         run: |
           VER=$(curl -fsSL https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)
@@ -34,3 +38,16 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with: {name: sysdig-scan, path: scan.json, if-no-files-found: ignore}
+      # Push only from main so the cluster (and Sysdig runtime scanner) pulls from the registry.
+      - name: Log in to ghcr.io
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push image
+        if: github.event_name == 'push'
+        run: |
+          docker push "$IMAGE"
+          docker push "$IMAGE_LATEST"

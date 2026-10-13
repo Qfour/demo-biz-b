@@ -12,8 +12,8 @@ spec:
     spec:
       containers:
         - name: app
-          image: demo-biz-b:latest
-          imagePullPolicy: IfNotPresent   # image is built locally into Colima's docker
+          image: ghcr.io/qfour/demo-biz-b:latest   # pushed by CI; scanned at runtime from the registry
+          imagePullPolicy: Always
           ports: [{containerPort: 8080}]
           env:
             - {name: BUSINESS, value: b}
