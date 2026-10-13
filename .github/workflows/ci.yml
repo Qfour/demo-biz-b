@@ -3,51 +3,14 @@ on:
   push: {branches: [main]}
   pull_request:
 
-env:
-  IMAGE: ghcr.io/qfour/demo-biz-b:${{ github.sha }}
-  IMAGE_LATEST: ghcr.io/qfour/demo-biz-b:latest
-  SECURE_API_URL: https://app.au1.sysdig.com   # AU1 region
-
 jobs:
-  build-and-scan:
-    runs-on: ubuntu-latest
+  ci:
     permissions:
       contents: read
       packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build image
-        run: docker build -t "$IMAGE" -t "$IMAGE_LATEST" .
-      - name: Install sysdig-cli-scanner
-        run: |
-          VER=$(curl -fsSL https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)
-          curl -fsSL -o sysdig-cli-scanner "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/${VER}/linux/amd64/sysdig-cli-scanner"
-          chmod +x sysdig-cli-scanner
-      - name: Scan image
-        env:
-          SECURE_API_TOKEN: ${{ secrets.SECURE_API_TOKEN }}
-        run: |
-          # exit 1 = policy evaluation failed (reported, not blocking in this demo).
-          # Any other non-zero code (bad token, network, usage) fails the job.
-          set +e
-          ./sysdig-cli-scanner --apiurl "$SECURE_API_URL" \
-            --output=json-file=scan.json \
-            "docker://$IMAGE"
-          rc=$?
-          [ "$rc" -le 1 ] || exit "$rc"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with: {name: sysdig-scan, path: scan.json, if-no-files-found: ignore}
-      # Push only from main so the cluster (and Sysdig runtime scanner) pulls from the registry.
-      - name: Log in to ghcr.io
-        if: github.event_name == 'push'
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push image
-        if: github.event_name == 'push'
-        run: |
-          docker push "$IMAGE"
-          docker push "$IMAGE_LATEST"
+    uses: Qfour/demo-platform/.github/workflows/build-scan-push.yml@main
+    with:
+      image-name: ghcr.io/qfour/demo-biz-b
+      stop-on-failed-policy-eval: false
+    secrets:
+      SECURE_API_TOKEN: ${{ secrets.SECURE_API_TOKEN }}
