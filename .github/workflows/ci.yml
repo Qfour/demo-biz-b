@@ -9,7 +9,7 @@ jobs:
       contents: read
       packages: write
       security-events: write
-    uses: Qfour/demo-platform/.github/workflows/build-scan-push.yml@main
+    uses: Qfour/demo-ci/.github/workflows/build-scan-push.yml@main
     with:
       image-name: ghcr.io/qfour/demo-biz-b
       stop-on-failed-policy-eval: false
